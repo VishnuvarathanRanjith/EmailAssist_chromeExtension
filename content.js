@@ -3,23 +3,23 @@ console.log(imageURL);
 
 const API_KEY = "AIzaSyC2k93RFKWFLC5zNRW_kOS-MCr4wnx1iBA";
 
-// Initialize the MutationObserver
+
 const observer = new MutationObserver(() => addBookMark());
 observer.observe(document.body, { childList: true, subtree: true });
 
-// Initial call to add the bookmark button
+
 addBookMark();
 
 function addBookMark() {
-    // Check if the current page is an email page
+    
     if (!emailPage()) return;
 
-    // Check if the bookmark button already exists
+   
     if (document.getElementById("book-mark-btn")) {
         return;
     }
 
-    // Find the forward button
+   
     const forwardBtn = document.getElementsByClassName("ams bkG")[0];
 
     if (!forwardBtn) {
@@ -27,7 +27,7 @@ function addBookMark() {
         return;
     }
 
-    // Create the bookmark button
+
     const bookMarkBtn = document.createElement("img");
     bookMarkBtn.id = "book-mark-btn";
     bookMarkBtn.src = imageURL;
@@ -42,16 +42,16 @@ function addBookMark() {
         bookMarkBtn.style.filter = "none";
     });
 
-    // Add the bookmark button to the DOM
+
     forwardBtn.parentNode.insertAdjacentElement("beforeend", bookMarkBtn);
 
-    // Remove the existing chatbot container if it exists
+   
     const existingChatbotContainer = document.getElementById("chatbot-container");
     if (existingChatbotContainer) {
         existingChatbotContainer.remove();
     }
 
-    // Create the chatbot container
+ 
     const chatbotContainer = document.createElement("div");
     chatbotContainer.id = "chatbot-container";
     chatbotContainer.style.position = "fixed";
@@ -77,10 +77,9 @@ function addBookMark() {
         </div>
     `;
 
-    // Add the chatbot container to the DOM
     document.body.appendChild(chatbotContainer);
 
-    // Add event listeners for the bookmark button and chatbot container
+    
     bookMarkBtn.addEventListener("click", () => {
         chatbotContainer.style.display = chatbotContainer.style.display === "none" ? "block" : "none";
     });
@@ -103,7 +102,6 @@ function message() {
 
     if (!input) return;
 
-    // Add the user's message to the chat
     const userMessage = document.createElement("div");
     userMessage.style.background = "#007bff";
     userMessage.style.color = "white";
@@ -115,11 +113,11 @@ function message() {
 
     chatBody.appendChild(userMessage);
 
-    // Send the message to Gemini AI
+
     const emailContent = getEmailContent();
     sendToGemini(input, emailContent);
 
-    // Clear the input field
+
     document.getElementById("chatbot-input").value = "";
 }
 
