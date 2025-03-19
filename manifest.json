@@ -1,0 +1,43 @@
+
+{
+  "manifest_version": 3,
+  "name": "smart email assist",
+  "version": "0.1.0",
+  "description": "smart email assist that reduces the time of the user",
+  "permissions": [
+      "storage",
+      "tabs"
+  ],
+  "content_scripts": [
+      {
+          "matches": [
+              "https://mail.google.com/mail/*"
+          ],
+          "js": [
+              "content.js"
+          ]
+      }
+  ],
+  "background": [
+      {
+          "service_worker": "background.js"
+      }
+  ],
+  "web_accessible_resources": [
+      {
+          "resources": [
+              "assets/idea.png"
+          ],
+          "matches": [
+              "<all_urls>"
+          ]
+      }
+  ],
+  "action": {
+      "default_icon": {
+          "16": "assets/idea.png"
+      },
+      "default_popup": "popup.html",
+      "default_title": "Smart Email Assist"
+  }
+}
