@@ -1,7 +1,7 @@
 const imageURL = chrome.runtime.getURL("assets/idea.png");
 console.log(imageURL);
 
-const API_KEY = "AIzaSyB6kWec0cSgjfNC1Elgcq27xATU3mN3Abs";
+const API_KEY = "AIzaSyC2k93RFKWFLC5zNRW_kOS-MCr4wnx1iBA";
 
 const observer = new MutationObserver(() => addBookMark());
 observer.observe(document.body, { childList: true, subtree: true });
@@ -65,6 +65,7 @@ function addBookMark() {
 
     bookMarkBtn.addEventListener("click", () => {
         chatbotContainer.style.display = chatbotContainer.style.display === "none" ? "block" : "none";
+        loadChatHistory();
     });
 
     document.getElementById("close-chatbot").addEventListener("click", () => {
@@ -77,6 +78,12 @@ function addBookMark() {
 function getEmailContent() {
     const emailElement = document.querySelector(".a3s.aiL");
     return emailElement ? emailElement.innerText : "No email content found.";
+}
+
+function getEmailIdentifier() {
+    const subject = document.querySelector("h2[data-thread-perm-id]")?.innerText || "unknown";
+    const sender = document.querySelector(".gD")?.innerText || "unknown";
+    return `${subject}-${sender}`;
 }
 
 function message() {
@@ -95,6 +102,9 @@ function message() {
     sendToGemini(input, emailContent);
 
     document.getElementById("chatbot-input").value = "";
+
+   
+    saveChatHistory(input, "user");
 }
 
 function emailPage() {
@@ -130,6 +140,7 @@ async function sendToGemini(userQuery, emailContent) {
         if (data.candidates && data.candidates.length > 0) {
             const responseText = data.candidates[0].content.parts[0].text;
             displayBotResponse(responseText, userQuery); // Pass userQuery here
+            saveChatHistory(responseText, "bot"); // Save the bot response to chat history
         } else {
             displayBotResponse("Sorry, I couldn't process the request.", userQuery);
         }
@@ -142,43 +153,52 @@ async function sendToGemini(userQuery, emailContent) {
 function displayBotResponse(response, userInput) {
     const chatBody = document.getElementById("chatbot-body");
 
+
     const botMessage = document.createElement("div");
     botMessage.className = "bot-message";
     botMessage.innerText = response;
-
     chatBody.appendChild(botMessage);
 
-    // Check if the user's input includes the word "reply"
+
     if (userInput.toLowerCase().includes("reply")) {
-        // Add Reply Button
-        const replyBtn = document.createElement("button");
-        replyBtn.className = "reply-btn";
-        replyBtn.innerText = "Reply";
-        replyBtn.style.display = "block";
-        replyBtn.style.margin = "10px auto";
-        replyBtn.style.padding = "8px 12px";
-        replyBtn.style.border = "none";
-        replyBtn.style.background = "linear-gradient(135deg, #42a5f5, #1e88e5)";
-        replyBtn.style.color = "white";
-        replyBtn.style.borderRadius = "8px";
-        replyBtn.style.cursor = "pointer";
-        replyBtn.style.fontSize = "14px";
-        replyBtn.style.transition = "background 0.3s ease, transform 0.2s ease";
-
-        replyBtn.addEventListener("mouseover", () => {
-            replyBtn.style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
-            replyBtn.style.transform = "scale(1.05)";
-        });
-
-        replyBtn.addEventListener("mouseout", () => {
-            replyBtn.style.background = "linear-gradient(135deg, #42a5f5, #1e88e5)";
-            replyBtn.style.transform = "scale(1)";
-        });
-
-        replyBtn.addEventListener("click", () => openReplyBox(response));
-
-        chatBody.appendChild(replyBtn);
+        renderReplyButton(response); 
     }
+}
+
+function renderReplyButton(botResponse) {
+    const chatBody = document.getElementById("chatbot-body");
+
+  
+    if (document.querySelector(".reply-btn")) return;
+
+    const replyBtn = document.createElement("button");
+    replyBtn.className = "reply-btn";
+    replyBtn.innerText = "Reply";
+    replyBtn.style.display = "block";
+    replyBtn.style.margin = "10px auto";
+    replyBtn.style.padding = "8px 12px";
+    replyBtn.style.border = "none";
+    replyBtn.style.background = "linear-gradient(135deg, #42a5f5, #1e88e5)";
+    replyBtn.style.color = "white";
+    replyBtn.style.borderRadius = "8px";
+    replyBtn.style.cursor = "pointer";
+    replyBtn.style.fontSize = "14px";
+    replyBtn.style.transition = "background 0.3s ease, transform 0.2s ease";
+
+    replyBtn.addEventListener("mouseover", () => {
+        replyBtn.style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
+        replyBtn.style.transform = "scale(1.05)";
+    });
+
+    replyBtn.addEventListener("mouseout", () => {
+        replyBtn.style.background = "linear-gradient(135deg, #42a5f5, #1e88e5)";
+        replyBtn.style.transform = "scale(1)";
+    });
+
+   
+    replyBtn.addEventListener("click", () => openReplyBox(botResponse));
+
+    chatBody.appendChild(replyBtn);
 }
 
 function openReplyBox(replyText) {
@@ -201,11 +221,31 @@ function insertReply(replyText) {
     }
 }
 
+function saveChatHistory(message, sender) {
+    const emailIdentifier = getEmailIdentifier();
+    const chatHistory = JSON.parse(localStorage.getItem(emailIdentifier)) || [];
+    chatHistory.push({ sender, message });
+    localStorage.setItem(emailIdentifier, JSON.stringify(chatHistory));
+}
+
+function loadChatHistory() {
+    const emailIdentifier = getEmailIdentifier();
+    const chatHistory = JSON.parse(localStorage.getItem(emailIdentifier)) || [];
+    const chatBody = document.getElementById("chatbot-body");
+    chatBody.innerHTML = ""; 
+
+ 
+    chatHistory.forEach(entry => {
+        const messageElement = document.createElement("div");
+        messageElement.className = entry.sender === "user" ? "user-message" : "bot-message";
+        messageElement.innerText = entry.message;
+        chatBody.appendChild(messageElement);
+    });
+}
 
 
 const style = document.createElement("style");
 style.textContent = `
-   /* Chatbot Container */
 
 
 `;
